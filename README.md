@@ -1,3 +1,6 @@
+# Personal Fork – Azure RAG Exploration
+Starting point for hands-on learning with secure document Q&A – March 2026.
+
 <!--
 ---
 name: RAG chat app with your data (Python)
