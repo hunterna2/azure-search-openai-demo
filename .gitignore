@@ -2,6 +2,12 @@
 .azure
 *_env
 
+# Sensitive / local files
+root_env_backup
+--name
+.agent.md
+*.md5
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

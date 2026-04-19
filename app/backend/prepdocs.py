@@ -257,6 +257,7 @@ if __name__ == "__main__":  # pragma: no cover
         openai_host=OPENAI_HOST,
         azure_credential=azd_credential,
         azure_openai_service=os.getenv("AZURE_OPENAI_SERVICE"),
+        azure_openai_endpoint_override=os.getenv("AZURE_OPENAI_ENDPOINT"),
         azure_openai_custom_url=os.getenv("AZURE_OPENAI_CUSTOM_URL"),
         azure_openai_api_key=os.getenv("AZURE_OPENAI_API_KEY_OVERRIDE"),
         openai_api_key=clean_key_if_exists(os.getenv("OPENAI_API_KEY")),

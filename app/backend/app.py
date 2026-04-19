@@ -22,6 +22,7 @@ from azure.identity.aio import (
     get_bearer_token_provider,
 )
 from azure.monitor.opentelemetry import configure_azure_monitor
+from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.knowledgebases.aio import KnowledgeBaseRetrievalClient
@@ -395,12 +396,14 @@ async def setup_clients():
     # Replace these with your own values, either in environment variables or directly here
     AZURE_STORAGE_ACCOUNT = os.environ["AZURE_STORAGE_ACCOUNT"]
     AZURE_STORAGE_CONTAINER = os.environ["AZURE_STORAGE_CONTAINER"]
+    AZURE_STORAGE_KEY = os.getenv("AZURE_STORAGE_KEY")
     AZURE_IMAGESTORAGE_CONTAINER = os.environ.get("AZURE_IMAGESTORAGE_CONTAINER")
     AZURE_USERSTORAGE_ACCOUNT = os.environ.get("AZURE_USERSTORAGE_ACCOUNT")
     AZURE_USERSTORAGE_CONTAINER = os.environ.get("AZURE_USERSTORAGE_CONTAINER")
     AZURE_SEARCH_SERVICE = os.environ["AZURE_SEARCH_SERVICE"]
     AZURE_SEARCH_ENDPOINT = f"https://{AZURE_SEARCH_SERVICE}.search.windows.net"
     AZURE_SEARCH_INDEX = os.environ["AZURE_SEARCH_INDEX"]
+    AZURE_SEARCH_KEY = os.getenv("AZURE_SEARCH_ADMIN_KEY")
     AZURE_SEARCH_KNOWLEDGEBASE_NAME = os.getenv("AZURE_SEARCH_KNOWLEDGEBASE_NAME", "")
     # Shared by all OpenAI deployments
     OPENAI_HOST = OpenAIHost(os.getenv("OPENAI_HOST", "azure"))
@@ -412,6 +415,7 @@ async def setup_clients():
     OPENAI_REASONING_EFFORT = os.getenv("AZURE_OPENAI_REASONING_EFFORT")
     # Used with Azure OpenAI deployments
     AZURE_OPENAI_SERVICE = os.getenv("AZURE_OPENAI_SERVICE")
+    AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
     AZURE_OPENAI_CHATGPT_DEPLOYMENT = (
         os.getenv("AZURE_OPENAI_CHATGPT_DEPLOYMENT")
         if OPENAI_HOST in [OpenAIHost.AZURE, OpenAIHost.AZURE_CUSTOM]
@@ -504,10 +508,11 @@ async def setup_clients():
     current_app.config[CONFIG_CREDENTIAL] = azure_credential
 
     # Set up clients for AI Search and Storage
+    search_credential = AzureKeyCredential(AZURE_SEARCH_KEY) if AZURE_SEARCH_KEY else azure_credential
     search_client = SearchClient(
         endpoint=AZURE_SEARCH_ENDPOINT,
         index_name=AZURE_SEARCH_INDEX,
-        credential=azure_credential,
+        credential=search_credential,
     )
 
     knowledgebase_client = KnowledgeBaseRetrievalClient(
@@ -540,7 +545,7 @@ async def setup_clients():
     # Set up the global blob storage manager (used for global content/images, but not user uploads)
     global_blob_manager = BlobManager(
         endpoint=f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net",
-        credential=azure_credential,
+        credential=AZURE_STORAGE_KEY if AZURE_STORAGE_KEY else azure_credential,
         container=AZURE_STORAGE_CONTAINER,
         image_container=AZURE_IMAGESTORAGE_CONTAINER,
     )
@@ -583,6 +588,7 @@ async def setup_clients():
         openai_host=OPENAI_HOST,
         azure_credential=azure_credential,
         azure_openai_service=AZURE_OPENAI_SERVICE,
+        azure_openai_endpoint_override=AZURE_OPENAI_ENDPOINT,
         azure_openai_custom_url=AZURE_OPENAI_CUSTOM_URL,
         azure_openai_api_key=AZURE_OPENAI_API_KEY_OVERRIDE,
         openai_api_key=OPENAI_API_KEY,

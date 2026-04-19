@@ -339,7 +339,10 @@ class ChatReadRetrieveReadApproach(Approach):
         self, messages: list[ChatCompletionMessageParam], overrides: dict[str, Any], auth_claims: dict[str, Any]
     ):
         use_text_search = overrides.get("retrieval_mode") in ["text", "hybrid", None]
-        use_vector_search = overrides.get("retrieval_mode") in ["vectors", "hybrid", None]
+        # In Azure mode an embedding deployment is required; disable vectors if none is configured
+        _azure_mode = bool(self.chatgpt_deployment)
+        _vectors_available = (not _azure_mode) or bool(self.embedding_deployment)
+        use_vector_search = _vectors_available and overrides.get("retrieval_mode") in ["vectors", "hybrid", None]
         use_semantic_ranker = True if overrides.get("semantic_ranker") else False
         use_semantic_captions = True if overrides.get("semantic_captions") else False
         use_query_rewriting = True if overrides.get("query_rewriting") else False
